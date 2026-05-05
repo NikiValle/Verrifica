@@ -1,0 +1,89 @@
+QUERY USATE
+1) Prendere tutti i membri (per riempire il menu a tendina dei membri)
+---------------------------------------------------------------------
+Query:
+SELECT id_membro, nome
+FROM Membri;
+2) Prendere tutti i corsi con il nome dell’istruttore (per il menu a tendina dei corsi)
+--------------------------------------------------------------------------------------
+Query:
+SELECT Corsi.id_corso, nome_corso, Istruttori.nome i
+FROM Corsi
+JOIN Istruttori ON Corsi.id_istruttore = Istruttori.id_istruttore;
+3) Controllare se un membro è già iscritto a un corso (per non fare doppioni)
+-----------------------------------------------------------------------------
+Query:
+SELECT 1
+FROM Iscrizioni_Corsi
+WHERE id_membro = ? AND id_corso = ?
+LIMIT 1;
+4) Iscrivere un membro a un corso (aggiungere una nuova iscrizione)
+-------------------------------------------------------------------
+Query:
+INSERT INTO Iscrizioni_Corsi (id_corso, id_membro, data_iscrizione, orario_preferito)
+VALUES (?, ?, CURDATE(), NULL);
+
+5) Prendere le info (nome membro, nome corso, nome istruttore) per mostrare il messaggio “Iscrizione aggiunta”
+-------------------------------------------------------------------------------------------------------------
+Query:
+SELECT Membri.nome AS m, Corsi.nome_corso AS c, Istruttori.nome AS i
+FROM Membri
+JOIN Corsi ON Corsi.id_corso = ?
+JOIN Istruttori ON Corsi.id_istruttore = Istruttori.id_istruttore
+WHERE Membri.id_membro = ?;
+6) (Sezione “Visualizza iscritti per corso”) Prendere il nome del corso scelto
+------------------------------------------------------------------------------
+Query:
+SELECT nome_corso
+FROM Corsi
+WHERE id_corso = ?;
+7) (Sezione “Visualizza iscritti per corso”) Prendere tutti gli iscritti a quel corso
+-------------------------------------------------------------------------------------
+Query:
+SELECT m.id_membro, m.nome, m.cognome, ic.data_iscrizione, ic.orario_preferito
+FROM Iscrizioni_Corsi ic
+JOIN Membri m ON m.id_membro = ic.id_membro
+WHERE ic.id_corso = ?
+ORDER BY ic.data_iscrizione DESC, m.cognome, m.nome;
+8) (Sezione “Visualizza iscritti per corso”) Prendere tutti i corsi per il menu a tendina (ordinati)
+---------------------------------------------------------------------------------------------------
+Query:
+SELECT id_corso, nome_corso
+FROM Corsi
+ORDER BY nome_corso;
+9) (Sezione “Corso con più iscritti per istruttore (min 5)”) Trovare, per ogni istruttore, il corso più pieno (con almeno 5 iscritti)
+-------------------------------------------------------------------------------------------------------------------------------------
+Query (quella che fa tutto):
+SELECT t.id_istruttore,
+       t.nome_istruttore,
+       t.cognome_istruttore,
+       t.id_corso,
+       t.nome_corso,
+       t.iscritti
+FROM (
+    SELECT c.id_istruttore,
+           i.nome AS nome_istruttore,
+           i.cognome AS cognome_istruttore,
+           c.id_corso,
+           c.nome_corso,
+           COUNT(ic.id_iscrizione) AS iscritti
+    FROM Corsi c
+    JOIN Istruttori i ON i.id_istruttore = c.id_istruttore
+    JOIN Iscrizioni_Corsi ic ON ic.id_corso = c.id_corso
+    GROUP BY c.id_istruttore, i.nome, i.cognome, c.id_corso, c.nome_corso
+) t
+JOIN (
+    SELECT id_istruttore, MAX(iscritti) AS max_iscritti
+    FROM (
+        SELECT c.id_istruttore,
+               c.id_corso,
+               COUNT(ic.id_iscrizione) AS iscritti
+        FROM Corsi c
+        JOIN Iscrizioni_Corsi ic ON ic.id_corso = c.id_corso
+        GROUP BY c.id_istruttore, c.id_corso
+    ) x
+    GROUP BY id_istruttore
+) mx ON mx.id_istruttore = t.id_istruttore AND mx.max_iscritti = t.iscritti
+WHERE t.iscritti >= 5
+ORDER BY t.cognome_istruttore, t.nome_istruttore, t.iscritti DESC, t.nome_corso;
+
