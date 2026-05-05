@@ -13,3 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+<form method="POST">
+    Username: <input type="text" name="username"><br>
+    Password: <input type="password" name="username"><br>
+</form>
