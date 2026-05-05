@@ -20,7 +20,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
 <h2>Login</h2>
-<?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
 <form method="POST">
     <input type="text" name="username" placeholder="Username" required>
     <br><br>
