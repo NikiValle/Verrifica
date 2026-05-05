@@ -13,7 +13,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Valle Gym</title>
+</head>
+<body>
+<h2>Login</h2>
+<?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
 <form method="POST">
-    Username: <input type="text" name="username"><br>
-    Password: <input type="password" name="username"><br>
+    <input type="text" name="username" placeholder="Username" required>
+    <br><br>
+    <input type="password" name="password" placeholder="Password" required>
+    <br><br>
+    <button type="submit">Login</button>
 </form>
+</body>
+</html>
